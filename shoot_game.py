@@ -92,13 +92,13 @@ def draw_text(text, font, text_col, x, y):
     screen.blit(img, (x, y))
 
 def draw_bg():
-    screen.fill(BG)
+    screen.fill(WHITE)
     width = sky_img.get_width()
     for x in range(5):
         # vẽ bg theo kích thước của màn hình * tôc độ
-        screen.blit(sky_img, ((x * width) - bg_scroll * 0.5, 0))
-        screen.blit(mountain_img, ((x * width) - bg_scroll * 0.6, SCREEN_HEIGHT - mountain_img.get_height() - 300))
-        screen.blit(pine1_img, ((x * width) - bg_scroll * 0.7, SCREEN_HEIGHT - pine1_img.get_height() - 150))
+        screen.blit(sky_img, ((x * width) - bg_scroll * 0.8, 0))
+        # screen.blit(mountain_img, ((x * width) - bg_scroll * 0.8, SCREEN_HEIGHT - mountain_img.get_height()))
+        # screen.blit(pine1_img, ((x * width) - bg_scroll * 0.8, SCREEN_HEIGHT - pine1_img.get_height()))
         screen.blit(pine2_img, ((x * width) - bg_scroll * 0.8, SCREEN_HEIGHT - pine2_img.get_height()))
 
 def reset_level():
@@ -544,9 +544,9 @@ intro_fade = ScreenFade(1, BLACK, 4)
 death_fade = ScreenFade(2, PINK, 4)
 
 # Create buttons
-start_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, start_img, 1)
+start_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 150, start_img, 1)
 exit_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 + 50, exit_img, 1)
-restart_button = button.Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, restart_img, 2)
+restart_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 50, restart_img, 1)
 
 # Create sprite groups
 enemy_group = pygame.sprite.Group()
@@ -578,7 +578,7 @@ while run:
     clock.tick(FPS)
 
     if start_game == False:
-        screen.fill(BG)
+        screen.fill(WHITE)
         if start_button.draw(screen):
             start_game = True
         if exit_button.draw(screen):
