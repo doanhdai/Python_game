@@ -388,10 +388,10 @@ class World():
                         decoration = Decoration(img, x * TILE_SIZE, y * TILE_SIZE)  # Tạo đối tượng trang trí
                         decoration_group.add(decoration)
                     elif tile == 15:  # Tạo người chơi
-                        player = Soldier('player', x * TILE_SIZE, y * TILE_SIZE, 1.65, 7, 20, 5)
+                        player = Soldier('player', x * TILE_SIZE, y * TILE_SIZE, 2, 7, 20, 5)
                         health_bar = HealthBar(10, 10, player.health, player.health)
                     elif tile == 16:  # Tạo kẻ địch
-                        enemy = Soldier('enemy', x * TILE_SIZE, y * TILE_SIZE, 1.65, 2, 20, 0)
+                        enemy = Soldier('enemy', x * TILE_SIZE, y * TILE_SIZE, 2, 2, 20, 0)
                         enemy_group.add(enemy)
                     elif tile == 17:  # Tạo hộp đạn
                         item_box = ItemBox('Ammo', x * TILE_SIZE, y * TILE_SIZE)
@@ -648,10 +648,10 @@ death_fade = ScreenFade(2, PINK, 4)
 
 #create buttons
 # Khởi tạo các nút bấm để chọn level
-level1_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 100, start_img, 1)  # Level 1 button
-level2_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 200, start_img, 1)  # Level 2 button
+level1_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 100, start_img, 1)  # Level 1 button
+level2_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 200, start_img, 1)  # Level 2 button
 # start_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, start_img, 1)
-exit_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 + 50, exit_img, 1)
+exit_button = button.Button(SCREEN_WIDTH // 2 - 90, SCREEN_HEIGHT // 2 + 140, exit_img, 1)
 restart_button = button.Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, restart_img, 2)
 pause_button = button.Button(SCREEN_WIDTH - 50, 10, pause_img, 1)
 continue_button = button.Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, continue_img, 1)
@@ -797,7 +797,7 @@ while run:
 			bg_scroll -= screen_scroll
 			#check if player has completed the level
 			if level_complete and level >= MAX_LEVELS:
-				start_intro = True
+				# start_intro = True
 				
 				level += 1
 				bg_scroll = 0
@@ -821,7 +821,7 @@ while run:
 			if death_fade.fade():
 				if restart_button.draw(screen):
 					death_fade.fade_counter = 0
-					start_intro = True
+					# start_intro = True
 					bg_scroll = 0
 					world_data = reset_level()
 					#load in level data and create world
