@@ -93,7 +93,9 @@ ammo_box_img = pygame.image.load('img/icons/ammo_box.png').convert_alpha()
 grenade_box_img = pygame.image.load('img/icons/grenade_box.png').convert_alpha()
 pause_img = pygame.image.load('img/pause.png').convert_alpha()
 pause_img = pygame.transform.scale(pause_img, (40, 40))
-continue_img = pygame.image.load('img/continue.png').convert_alpha()
+win_img = pygame.image.load('img/win.png')
+win_img = pygame.transform.scale(win_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+continue_img = pygame.image.load('img/pause.png').convert_alpha()
 item_boxes = {
 	'Health'	: health_box_img,
 	'Ammo'		: ammo_box_img,
@@ -386,7 +388,7 @@ class World():
                         decoration = Decoration(img, x * TILE_SIZE, y * TILE_SIZE)  # Tạo đối tượng trang trí
                         decoration_group.add(decoration)
                     elif tile == 15:  # Tạo người chơi
-                        player = Soldier('player', x * TILE_SIZE, y * TILE_SIZE, 1.65, 5, 20, 5)
+                        player = Soldier('player', x * TILE_SIZE, y * TILE_SIZE, 1.65, 7, 20, 5)
                         health_bar = HealthBar(10, 10, player.health, player.health)
                     elif tile == 16:  # Tạo kẻ địch
                         enemy = Soldier('enemy', x * TILE_SIZE, y * TILE_SIZE, 1.65, 2, 20, 0)
@@ -680,7 +682,7 @@ def load_level_data(level):
 world = World()
 # player, health_bar = world.process_data(world_data)
 paused = False  # Trạng thái tạm dừng
-
+game_won = False
 
 run = True
 while run:
@@ -712,6 +714,10 @@ while run:
 		if continue_button.draw(screen):  # Tiếp tục trò chơi
 			paused = False
 		if exit_button.draw(screen):  # Thoát
+			run = False
+	elif game_won:
+		screen.blit(win_img, (0, 0))
+		if exit_button.draw(screen):
 			run = False
 	else:
 		
@@ -790,20 +796,26 @@ while run:
 			screen_scroll, level_complete = player.move(moving_left, moving_right)
 			bg_scroll -= screen_scroll
 			#check if player has completed the level
-			if level_complete:
+			if level_complete and level >= MAX_LEVELS:
 				start_intro = True
+				
 				level += 1
 				bg_scroll = 0
-				world_data = reset_level()
-				if level <= MAX_LEVELS:
-					#load in level data and create world
-					with open(f'level{level}_data.csv', newline='') as csvfile:
-						reader = csv.reader(csvfile, delimiter=',')
-						for x, row in enumerate(reader):
-							for y, tile in enumerate(row):
-								world_data[x][y] = int(tile)
-					world = World()
-					player, health_bar = world.process_data(world_data)	
+				if level > MAX_LEVELS:
+        # Người chơi đã vượt qua tất cả các level
+					game_won = True
+					# start_game = False
+				else:
+					world_data = reset_level()
+					if level <= MAX_LEVELS:
+						#load in level data and create world
+						with open(f'level{level}_data.csv', newline='') as csvfile:
+							reader = csv.reader(csvfile, delimiter=',')
+							for x, row in enumerate(reader):
+								for y, tile in enumerate(row):
+									world_data[x][y] = int(tile)
+						world = World()
+						player, health_bar = world.process_data(world_data)	
 		else:
 			screen_scroll = 0
 			if death_fade.fade():
