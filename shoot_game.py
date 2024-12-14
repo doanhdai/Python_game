@@ -35,8 +35,16 @@ MAX_LEVELS = 2  # Số level tối đa
 
 screen_scroll = 0  # Biến theo dõi cuộn màn hình
 bg_scroll = 0  # Biến theo dõi cuộn nền
+def save_progress(level):
+    with open('progress.txt', 'w') as file:
+        file.write(str(level))
 
-level = 1  # Level hiện tại
+def load_progress():
+    if os.path.exists('progress.txt'):
+        with open('progress.txt', 'r') as file:
+            return int(file.read())
+    return 1  # Nếu chưa có file lưu, bắt đầu từ level 1
+level = load_progress()  # Level hiện tại
 start_game = False  # Trạng thái bắt đầu game
 start_intro = False  # Trạng thái bắt đầu intro
 
@@ -83,6 +91,9 @@ grenade_img = pygame.image.load('img/icons/grenade.png').convert_alpha()
 health_box_img = pygame.image.load('img/icons/health_box.png').convert_alpha()
 ammo_box_img = pygame.image.load('img/icons/ammo_box.png').convert_alpha()
 grenade_box_img = pygame.image.load('img/icons/grenade_box.png').convert_alpha()
+pause_img = pygame.image.load('img/pause.png').convert_alpha()
+pause_img = pygame.transform.scale(pause_img, (40, 40))
+continue_img = pygame.image.load('img/continue.png').convert_alpha()
 item_boxes = {
 	'Health'	: health_box_img,
 	'Ammo'		: ammo_box_img,
@@ -314,7 +325,7 @@ class Soldier(pygame.sprite.Sprite):
                         self.idling = False
 
         # Scroll
-        self.rect.x += screen_scroll
+        self.rect.x += screen_scroll 
 
     def update_animation(self):
         # Cập nhật animation
@@ -634,10 +645,14 @@ death_fade = ScreenFade(2, PINK, 4)
 
 
 #create buttons
-start_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, start_img, 1)
+# Khởi tạo các nút bấm để chọn level
+level1_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 100, start_img, 1)  # Level 1 button
+level2_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 200, start_img, 1)  # Level 2 button
+# start_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, start_img, 1)
 exit_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 + 50, exit_img, 1)
 restart_button = button.Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, restart_img, 2)
-
+pause_button = button.Button(SCREEN_WIDTH - 50, 10, pause_img, 1)
+continue_button = button.Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, continue_img, 1)
 #create sprite groups
 enemy_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
@@ -651,19 +666,20 @@ exit_group = pygame.sprite.Group()
 
 
 #create empty tile list
-world_data = []
-for row in range(ROWS):
-	r = [-1] * COLS
-	world_data.append(r)
-#load in level data and create world
-with open(f'level{level}_data.csv', newline='') as csvfile:
-	reader = csv.reader(csvfile, delimiter=',')
-	for x, row in enumerate(reader):
-		for y, tile in enumerate(row):
-			world_data[x][y] = int(tile)
+def load_level_data(level):
+    """Load the world data from a CSV file for the given level."""
+    world_data = []
+    with open(f'level{level}_data.csv', newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for x, row in enumerate(reader):
+            r = [int(tile) for tile in row]  # Convert each tile to an integer
+            world_data.append(r)
+    return world_data
+   
+   
 world = World()
-player, health_bar = world.process_data(world_data)
-
+# player, health_bar = world.process_data(world_data)
+paused = False  # Trạng thái tạm dừng
 
 
 run = True
@@ -675,12 +691,30 @@ while run:
 		#draw menu
 		screen.fill(BG)
 		#add buttons
-		if start_button.draw(screen):
-			start_game = True
-			start_intro = True
+		if not paused:
+			if level1_button.draw(screen):
+				level = 1 
+				start_game = True
+				# start_intro = True
+				player, health_bar = world.process_data(load_level_data(level))
+			if level2_button.draw(screen):
+				level = 2
+				start_game = True
+				# start_intro = True
+				player, health_bar = world.process_data(load_level_data(level))
 		if exit_button.draw(screen):
 			run = False
+	elif paused:
+        # Hiển thị menu Pause
+		screen.fill(BG)
+		draw_text('Game Paused', font, WHITE, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 200)
+
+		if continue_button.draw(screen):  # Tiếp tục trò chơi
+			paused = False
+		if exit_button.draw(screen):  # Thoát
+			run = False
 	else:
+		
 		#update background
 		draw_bg()
 		#draw world map
@@ -721,6 +755,12 @@ while run:
 		water_group.draw(screen)
 		exit_group.draw(screen)
 
+  
+  
+		if pause_button.draw(screen):
+			paused =True
+			# start_game = False
+			
 		#show intro
 		if start_intro == True:
 			if intro_fade.fade():
@@ -792,7 +832,7 @@ while run:
 				moving_left = True
 			if event.key == pygame.K_d:
 				moving_right = True
-			if event.key == pygame.K_SPACE:
+			if event.key == pygame.K_SPACE or event.key == pygame.K_k:
 				shoot = True
 			if event.key == pygame.K_q:
 				grenade = True
@@ -809,7 +849,7 @@ while run:
 				moving_left = False
 			if event.key == pygame.K_d:
 				moving_right = False
-			if event.key == pygame.K_SPACE:
+			if event.key == pygame.K_SPACE or event.key == pygame.K_k:
 				shoot = False
 			if event.key == pygame.K_q:
 				grenade = False
