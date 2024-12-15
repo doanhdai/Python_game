@@ -92,10 +92,20 @@ health_box_img = pygame.image.load('img/icons/health_box.png').convert_alpha()
 ammo_box_img = pygame.image.load('img/icons/ammo_box.png').convert_alpha()
 grenade_box_img = pygame.image.load('img/icons/grenade_box.png').convert_alpha()
 pause_img = pygame.image.load('img/pause.png').convert_alpha()
-pause_img = pygame.transform.scale(pause_img, (40, 40))
+pause_img = pygame.transform.scale(pause_img, (80, 80))
+level_img = pygame.image.load('img/level.png').convert_alpha()
+level_img = pygame.transform.scale(level_img, (200,200))
 win_img = pygame.image.load('img/win.png')
 win_img = pygame.transform.scale(win_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 continue_img = pygame.image.load('img/pause.png').convert_alpha()
+continue_img = pygame.transform.scale(continue_img, (100, 100))
+
+lv1 = pygame.image.load('img/lv1.png')
+lv1 = pygame.transform.scale(lv1, (100, 100))
+
+lv2 = pygame.image.load('img/lv2.png')
+lv2 = pygame.transform.scale(lv2, (100, 100))
+
 item_boxes = {
 	'Health'	: health_box_img,
 	'Ammo'		: ammo_box_img,
@@ -104,7 +114,7 @@ item_boxes = {
 
 
 #màu sắc mặc định
-BG = (144, 201, 120)
+BG = (255, 255, 255)
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
@@ -151,6 +161,7 @@ def reset_level():
 
 
 class Soldier(pygame.sprite.Sprite):
+    
     def __init__(self, char_type, x, y, scale, speed, ammo, grenades):
         pygame.sprite.Sprite.__init__(self)
         # Khởi tạo các thuộc tính cơ bản của nhân vật
@@ -291,11 +302,13 @@ class Soldier(pygame.sprite.Sprite):
             # Giảm đạn
             self.ammo -= 1
             shot_fx.play()
+            
+
 
     def ai(self):
         if self.alive and player.alive:
             # Xác suất AI đứng yên
-            if self.idling == False and random.randint(1, 200) == 1:
+            if self.idling == False and random.randint(1, 100) == 1:
                 self.update_action(0)  # 0: idle
                 self.idling = True
                 self.idling_counter = 50
@@ -307,6 +320,10 @@ class Soldier(pygame.sprite.Sprite):
                 self.shoot()
             else:
                 if self.idling == False:
+					# if (self.direction == 1 and player.rect.centerx < self.rect.centerx) or (self.direction == -1 and player.rect.centerx > self.rect.centerx):
+					# 		# Nếu người chơi ở phía ngược lại, AI lật lại
+					# 	self.direction *= -1
+                    
                     if self.direction == 1:
                         ai_moving_right = True
                     else:
@@ -315,9 +332,11 @@ class Soldier(pygame.sprite.Sprite):
                     self.move(ai_moving_left, ai_moving_right)
                     self.update_action(1)  # 1: run
                     self.move_counter += 1
+
                     # Cập nhật tầm nhìn AI khi di chuyển
                     self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery)
-
+                    #hiển thị khung hình của máymáy
+                    # pygame.draw.rect(screen, (255, 0, 0), self.vision, 2)
                     if self.move_counter > TILE_SIZE:
                         self.direction *= -1
                         self.move_counter *= -1
@@ -367,7 +386,14 @@ class Soldier(pygame.sprite.Sprite):
 class World():
     def __init__(self):
         self.obstacle_list = []  # Danh sách chứa các obstacle trong thế giới game
-
+    def adjust_difficulty(self, level):
+        """Điều chỉnh độ khó của game."""
+        if level == 2:
+            self.player_damage = 20  # Tăng sát thương kẻ địch
+            self.ai_damage = 20
+        else:
+            self.enemy_speed = 2
+            self.enemy_damage = 50
     def process_data(self, data):
         self.level_length = len(data[0])  # Độ dài của level
         # Duyệt qua từng giá trị trong file dữ liệu level
@@ -648,13 +674,18 @@ death_fade = ScreenFade(2, PINK, 4)
 
 #create buttons
 # Khởi tạo các nút bấm để chọn level
-level1_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 100, start_img, 1)  # Level 1 button
-level2_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 200, start_img, 1)  # Level 2 button
+start_btn = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 100, start_img, 1)  # Level 1 button
+level1_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 200, lv1, 1)  # Level 2 button
+level2_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 100, lv2, 1)
+select_level = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 - 30, level_img, 1)
 # start_button = button.Button(SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 - 150, start_img, 1)
-exit_button = button.Button(SCREEN_WIDTH // 2 - 90, SCREEN_HEIGHT // 2 + 140, exit_img, 1)
+exit_button = button.Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 2 + 140, exit_img, 1)
 restart_button = button.Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, restart_img, 2)
-pause_button = button.Button(SCREEN_WIDTH - 50, 10, pause_img, 1)
+pause_button = button.Button(SCREEN_WIDTH - 110, 10, pause_img, 1)
 continue_button = button.Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, continue_img, 1)
+
+
+
 #create sprite groups
 enemy_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
@@ -683,7 +714,8 @@ world = World()
 # player, health_bar = world.process_data(world_data)
 paused = False  # Trạng thái tạm dừng
 game_won = False
-
+quite_home = True
+open_menu_level = False
 run = True
 while run:
 
@@ -694,22 +726,39 @@ while run:
 		screen.fill(BG)
 		#add buttons
 		if not paused:
-			if level1_button.draw(screen):
-				level = 1 
-				start_game = True
-				# start_intro = True
-				player, health_bar = world.process_data(load_level_data(level))
-			if level2_button.draw(screen):
-				level = 2
-				start_game = True
-				# start_intro = True
-				player, health_bar = world.process_data(load_level_data(level))
-		if exit_button.draw(screen):
+			if quite_home:
+				if start_btn.draw(screen):
+					# level = 1 
+					start_game = True
+					# start_intro = True
+					player, health_bar = world.process_data(load_level_data(level))
+				# if level2_button.draw(screen):
+				if select_level.draw(screen):
+					# pause_button.draw(screen)
+					open_menu_level = True
+					quite_home = False
+					exit_button.draw(screen)
+			else:
+				if exit_button.draw(screen):
+					run = False
+				elif open_menu_level:
+
+					if level1_button.draw(screen):
+						if open_menu_level == True:
+							open_menu_level = False
+							level = 1
+							start_game = True
+							player, health_bar = world.process_data(load_level_data(level))
+					if level2_button.draw(screen):
+						if open_menu_level == True:
+							
+							quite_home = True     
+		if exit_button.draw(screen):  # Exit button inside level menu
 			run = False
 	elif paused:
         # Hiển thị menu Pause
 		screen.fill(BG)
-		draw_text('Game Paused', font, WHITE, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 200)
+		# draw_text('Game Paused', font, WHITE, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 200)
 
 		if continue_button.draw(screen):  # Tiếp tục trò chơi
 			paused = False
@@ -796,7 +845,7 @@ while run:
 			screen_scroll, level_complete = player.move(moving_left, moving_right)
 			bg_scroll -= screen_scroll
 			#check if player has completed the level
-			if level_complete and level >= MAX_LEVELS:
+			if level_complete:
 				# start_intro = True
 				
 				level += 1
@@ -804,8 +853,10 @@ while run:
 				if level > MAX_LEVELS:
         # Người chơi đã vượt qua tất cả các level
 					game_won = True
+
 					# start_game = False
 				else:
+					save_progress(level)
 					world_data = reset_level()
 					if level <= MAX_LEVELS:
 						#load in level data and create world
@@ -816,6 +867,7 @@ while run:
 									world_data[x][y] = int(tile)
 						world = World()
 						player, health_bar = world.process_data(world_data)	
+		
 		else:
 			screen_scroll = 0
 			if death_fade.fade():
